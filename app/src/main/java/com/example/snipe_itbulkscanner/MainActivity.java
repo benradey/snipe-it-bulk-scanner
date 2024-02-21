@@ -80,9 +80,13 @@ public class MainActivity extends AppCompatActivity {
         String apiKey = sharedPreferences.getString("apiKey", "");
         if (baseUrl.isEmpty()) {
             promptUserForString("base URL", "baseUrl", (input) -> this.baseUrl = input);
+        } else {
+            this.baseUrl = baseUrl;
         }
         if (apiKey.isEmpty()) {
             promptUserForString("API key", "apiKey", (input) -> this.apiKey = input);
+        } else {
+            this.apiKey = apiKey;
         }
     }
 

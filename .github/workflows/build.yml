@@ -53,6 +53,6 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: app/build/outputs/apk/release/app-release-unsigned.apk
-        asset_name: my-artifact
+        asset_name: app-release-unsigned.apk
         asset_content_type: application/octet-stream
 

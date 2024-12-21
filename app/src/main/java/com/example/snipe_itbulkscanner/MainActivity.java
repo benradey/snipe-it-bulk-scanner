@@ -1,10 +1,12 @@
 package com.example.snipe_itbulkscanner;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -13,9 +15,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.journeyapps.barcodescanner.ScanContract;
-import com.journeyapps.barcodescanner.ScanOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,19 +41,19 @@ public class MainActivity extends AppCompatActivity {
     private String baseUrl;
     private String apiKey;
 
-    private final ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(),
+    private final ActivityResultLauncher<Intent> barcodeLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if(result.getContents() == null) {
-                    Toast.makeText(MainActivity.this, "Canceled", Toast.LENGTH_LONG).show();
-                } else {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    String scannedData = result.getData().getStringExtra("SCAN_RESULT");
                     boolean goodscan = true;
-                    if (result.getContents().startsWith(baseUrl + hardwareEndpoint)) {
+                    if (scannedData.startsWith(baseUrl + hardwareEndpoint)) {
                         // Asset
-                        assetId = result.getContents().replace(baseUrl + hardwareEndpoint, "");
+                        assetId = scannedData.replace(baseUrl + hardwareEndpoint, "");
                         assetIdOutput.setText(assetId);
-                    } else if (result.getContents().startsWith(baseUrl + locationsEndpoint)) {
+                    } else if (scannedData.startsWith(baseUrl + locationsEndpoint)) {
                         // Location
-                        locationId = result.getContents().replace(baseUrl + locationsEndpoint, "");
+                        locationId = scannedData.replace(baseUrl + locationsEndpoint, "");
                         locationIdOutput.setText(locationId);
                     } else {
                         Toast.makeText(MainActivity.this, "Not a valid " + baseUrl + " Snipe-IT QR code", Toast.LENGTH_LONG).show();
@@ -64,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
                         responseOutput.setText("");
                         new HttpAsyncTask().execute();
                     }
+                } else {
+                    Toast.makeText(this, "Scan cancelled or failed.", Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -109,7 +110,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onScanButtonClick(View view) {
-        barcodeLauncher.launch(new ScanOptions());
+        Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+
+        barcodeLauncher.launch(intent);
     }
 
     public void onResetButtonClick(View view) {
